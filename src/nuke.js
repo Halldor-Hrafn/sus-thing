@@ -1,4 +1,31 @@
 import puppeteer from "puppeteer";
+import fs from "fs";
+
+function pickRandomItem(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+function getRandomItem() {
+    return new Promise((resolve, reject) => {
+        fs.readFile("./data.json", "utf8", (err, data) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+                return;
+            }
+
+            const items = JSON.parse(data);
+
+            const randomFirstName = pickRandomItem(items.first);
+            const randomLastName = pickRandomItem(items.last);
+            const randomEmail = pickRandomItem(items.emails);
+
+            const email = randomFirstName.toLowerCase() + randomLastName.toLowerCase() + "@" + randomEmail;
+
+            resolve([randomFirstName, randomLastName, email]);
+        });
+    });
+}
 
 const url = "https://secured.heritage.org/the-heritage-doge-survey/";
 
@@ -31,9 +58,11 @@ async function nuke() {
         await page.click('#do_you_support_significant_cuts_to_the_federal_budget_to_eliminate_budget_deficits_and_pay_down_the_national_debt_undecided');
         await page.click('#do_you_believe_the_department_of_government_efficiency_doge_will_be_an_effective_tool_for_eliminating_excessive_government_spending__no');
 
-        await page.type('#first_name', 'Elon');
-        await page.type('#last_name', 'Musk');
-        await page.type('#email', 'elon@stupid.com');
+        const [firstName, lastName, email] = await getRandomItem();
+
+        await page.type('#first_name', firstName);
+        await page.type('#last_name', lastName);
+        await page.type('#email', email);
 
         await page.click('#lp-pom-button-122');
 
